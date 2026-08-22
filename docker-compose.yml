@@ -1,0 +1,80 @@
+# ==============================================================================
+# EDUCATIONAL DOCKER COMPOSE FILE FOR MULTI-CONTAINER FULL-STACK STACK
+# ==============================================================================
+# Docker Compose lets you define and run multi-container applications.
+# Here we connect:
+#  1. Next.js Web App (Node.js)
+#  2. MongoDB Database Server
+#  3. Mongo-Express Database Web GUI
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # Service 1: Next.js Task Management Web Application
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task_management_web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Note: 'mongodb' in the connection URI below refers to the service name defined in this file.
+      # Docker automatically sets up internal DNS so containers can talk by service name!
+      - MONGODB_URI=mongodb://mongodb:27017/taskdb
+    depends_on:
+      - mongodb
+    restart: always
+    networks:
+      - task_app_network
+
+  # ----------------------------------------------------------------------------
+  # Service 2: MongoDB Database Server
+  # ----------------------------------------------------------------------------
+  mongodb:
+    image: mongo:6.0
+    container_name: task_management_mongodb
+    ports:
+      - "27017:27017" # Host_Port:Container_Port
+    volumes:
+      # Persistent named volume ensures your database data is saved even if containers stop!
+      - mongo_data:/data/db
+    restart: always
+    networks:
+      - task_app_network
+
+  # ----------------------------------------------------------------------------
+  # Service 3: Mongo Express (Web Dashboard for MongoDB)
+  # ----------------------------------------------------------------------------
+  mongo-express:
+    image: mongo-express:latest
+    container_name: task_management_mongo_express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH=false # Disable auth for easy local development
+    depends_on:
+      - mongodb
+    restart: always
+    networks:
+      - task_app_network
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes
+# ------------------------------------------------------------------------------
+volumes:
+  mongo_data:
+    driver: local
+
+# ------------------------------------------------------------------------------
+# Internal Container Network
+# ------------------------------------------------------------------------------
+networks:
+  task_app_network:
+    driver: bridge
