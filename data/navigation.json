@@ -1,6 +1,7 @@
 {
   "pageTitles": {
     "dashboard": "Dashboard",
+    "todolist": "To-Do List",
     "kanban": "My Tasks",
     "analytics": "Analytics"
   },
@@ -9,6 +10,11 @@
       "id": "dashboard",
       "label": "Dashboard",
       "icon": "LayoutDashboard"
+    },
+    {
+      "id": "todolist",
+      "label": "To-Do List",
+      "icon": "CheckSquare"
     },
     {
       "id": "kanban",

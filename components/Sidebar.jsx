@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  CheckCircle2, LayoutDashboard, ListTodo, BarChart2,
+  CheckCircle2, LayoutDashboard, ListTodo, BarChart2, CheckSquare,
   Sun, Moon, LogOut, ShieldCheck, Database,
   Plus, RefreshCw, X
 } from 'lucide-react';
@@ -10,6 +10,7 @@ import landingConfig from '@/data/landing.json';
 
 const NAV_ICON_MAP = {
   LayoutDashboard,
+  CheckSquare,
   ListTodo,
   BarChart2,
 };

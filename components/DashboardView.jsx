@@ -270,13 +270,22 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Recent Tasks
           </h2>
-          <button
-            onClick={() => onChangeView('kanban')}
-            className="btn-ghost text-xs flex items-center gap-1"
-            style={{ color: 'var(--accent-blue-light)' }}
-          >
-            View All <ArrowRight className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onChangeView('todolist')}
+              className="btn-ghost text-xs flex items-center gap-1"
+              style={{ color: 'var(--accent-cyan-light)' }}
+            >
+              To-Do List <ArrowRight className="w-3 h-3" />
+            </button>
+            <button
+              onClick={() => onChangeView('kanban')}
+              className="btn-ghost text-xs flex items-center gap-1"
+              style={{ color: 'var(--accent-blue-light)' }}
+            >
+              Board <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
         {recentTasks.length === 0 ? (

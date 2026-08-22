@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DashboardView from '@/components/DashboardView';
+import TodoListView from '@/components/TodoListView';
 import MetricsOverview from '@/components/MetricsOverview';
 import KanbanBoard from '@/components/KanbanBoard';
 import TaskModal from '@/components/TaskModal';
@@ -387,6 +388,15 @@ function TaskManagementApp() {
                   tasks={tasks}
                   onOpenNewTaskModal={handleOpenCreateModal}
                   onChangeView={setActiveView}
+                />
+              ) : activeView === 'todolist' ? (
+                /* Dedicated To-Do Checklist View */
+                <TodoListView
+                  tasks={tasks}
+                  onSaveTask={handleSaveTask}
+                  onDeleteTask={handleDeleteTask}
+                  onStatusChange={handleStatusChange}
+                  onEditTask={handleOpenEditModal}
                 />
               ) : activeView === 'analytics' ? (
                 /* Analytics — shows metrics overview */
