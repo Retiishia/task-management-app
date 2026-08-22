@@ -9,7 +9,8 @@ import TaskModal from '@/components/TaskModal';
 import AuthModal from '@/components/AuthModal';
 import VerificationModal from '@/components/VerificationModal';
 import { ToastProvider, useToast } from '@/components/Toast';
-import appConfig from '@/data/appConfig.json';
+import navigationConfig from '@/data/navigation.json';
+import landingConfig from '@/data/landing.json';
 import {
   Search, Filter, LayoutGrid, List, RefreshCcw,
   Layers, Edit3, Trash2, ShieldCheck, LogIn, Sparkles, Plus, Menu
@@ -207,7 +208,7 @@ function TaskManagementApp() {
   };
 
   // ─── Page Title by View ───────────────────────────────────
-  const PAGE_TITLE = appConfig.pageTitles;
+  const PAGE_TITLE = navigationConfig.pageTitles;
 
   return (
     <div className="app-layout">
@@ -338,15 +339,15 @@ function TaskManagementApp() {
                 </div>
 
                 <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                  {appConfig.app.name}
+                  {landingConfig.app.name}
                 </h1>
                 <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-                  {appConfig.app.tagline}
+                  {landingConfig.app.tagline}
                 </p>
 
                 {/* Feature List */}
                 <div className="space-y-3 mb-8 text-left">
-                  {appConfig.landingFeatures.map(({ icon: iconName, label, color }) => {
+                  {landingConfig.features.map(({ icon: iconName, label, color }) => {
                     const Icon = LANDING_ICON_MAP[iconName] || ShieldCheck;
                     return (
                       <div key={label} className="flex items-center gap-3 p-3 rounded-lg"

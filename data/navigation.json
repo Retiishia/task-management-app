@@ -1,0 +1,24 @@
+{
+  "pageTitles": {
+    "dashboard": "Dashboard",
+    "kanban": "My Tasks",
+    "analytics": "Analytics"
+  },
+  "navItems": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "icon": "LayoutDashboard"
+    },
+    {
+      "id": "kanban",
+      "label": "My Tasks",
+      "icon": "ListTodo"
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics",
+      "icon": "BarChart2"
+    }
+  ]
+}

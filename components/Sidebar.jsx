@@ -5,7 +5,8 @@ import {
   Sun, Moon, LogOut, ShieldCheck, Database,
   Plus, RefreshCw, X
 } from 'lucide-react';
-import appConfig from '@/data/appConfig.json';
+import navigationConfig from '@/data/navigation.json';
+import landingConfig from '@/data/landing.json';
 
 const NAV_ICON_MAP = {
   LayoutDashboard,
@@ -13,7 +14,7 @@ const NAV_ICON_MAP = {
   BarChart2,
 };
 
-const NAV_ITEMS = appConfig.navItems.map((item) => ({
+const NAV_ITEMS = navigationConfig.navItems.map((item) => ({
   ...item,
   icon: NAV_ICON_MAP[item.icon] || LayoutDashboard,
 }));
@@ -63,10 +64,10 @@ export default function Sidebar({
             </div>
             <div>
               <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                {appConfig.app.name}
+                {landingConfig.app.name}
               </p>
               <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                v{appConfig.app.version}
+                v{landingConfig.app.version}
               </p>
             </div>
           </div>

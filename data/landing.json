@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "TaskFlow Pro",
+    "tagline": "Organize your work. Ship faster.",
+    "version": "1.0.0"
+  },
+  "features": [
+    {
+      "label": "Email OTP Verification",
+      "icon": "ShieldCheck",
+      "color": "#10b981"
+    },
+    {
+      "label": "Kanban & List Views",
+      "icon": "Layers",
+      "color": "#2563eb"
+    },
+    {
+      "label": "Per-user task isolation",
+      "icon": "Sparkles",
+      "color": "#8b5cf6"
+    }
+  ]
+}

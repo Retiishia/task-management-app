@@ -1,9 +1,4 @@
 {
-  "app": {
-    "name": "TaskFlow Pro",
-    "tagline": "Organize your work. Ship faster.",
-    "version": "1.0.0"
-  },
   "columns": [
     {
       "id": "todo",
@@ -87,45 +82,6 @@
       "border": "rgba(100,116,139,0.25)"
     }
   },
-  "pageTitles": {
-    "dashboard": "Dashboard",
-    "kanban": "My Tasks",
-    "analytics": "Analytics"
-  },
-  "navItems": [
-    {
-      "id": "dashboard",
-      "label": "Dashboard",
-      "icon": "LayoutDashboard"
-    },
-    {
-      "id": "kanban",
-      "label": "My Tasks",
-      "icon": "ListTodo"
-    },
-    {
-      "id": "analytics",
-      "label": "Analytics",
-      "icon": "BarChart2"
-    }
-  ],
-  "landingFeatures": [
-    {
-      "label": "Email OTP Verification",
-      "icon": "ShieldCheck",
-      "color": "#10b981"
-    },
-    {
-      "label": "Kanban & List Views",
-      "icon": "Layers",
-      "color": "#2563eb"
-    },
-    {
-      "label": "Per-user task isolation",
-      "icon": "Sparkles",
-      "color": "#8b5cf6"
-    }
-  ],
   "metricsStats": [
     {
       "key": "total",
