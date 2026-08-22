@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, CheckCircle2, Calendar, Tag, AlertCircle } from 'lucide-react';
+import { X, Plus, Trash2, Calendar, Tag, AlertCircle, CheckSquare } from 'lucide-react';
+import appConfig from '@/data/appConfig.json';
+
+const STATUS_ENTRIES = Object.entries(appConfig.statuses);
+const PRIORITY_ENTRIES = Object.entries(appConfig.priorities);
 
 export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initialStatus = 'todo' }) {
   const [title, setTitle] = useState('');
@@ -43,7 +47,7 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
   if (!isOpen) return null;
 
   const handleAddSubtask = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!newSubtaskTitle.trim()) return;
     setSubtasks([...subtasks, { title: newSubtaskTitle.trim(), completed: false }]);
     setNewSubtaskTitle('');
@@ -95,33 +99,32 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="glass-modal w-full max-w-xl rounded-2xl p-6 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="modal-overlay">
+      <div className="modal-box modal-box-lg p-0 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-          <h2 className="text-lg font-bold text-white">
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             {taskToEdit ? 'Edit Task' : 'Create New Task'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
-          >
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="btn-icon">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Modal Error */}
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <div className="mx-6 mt-4 p-3 rounded-lg text-xs flex items-center gap-2"
+            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Modal Form Content */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto space-y-4 pr-1 flex-1">
+        <form onSubmit={handleSubmit} className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Task Title *
             </label>
             <input
@@ -129,14 +132,15 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Implement MongoDB schema validation"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-500"
+              className="input-field"
               required
+              autoFocus
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               Description
             </label>
             <textarea
@@ -144,41 +148,43 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide detail instructions, notes, or implementation steps..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-500 resize-none"
+              className="input-field resize-none"
             />
           </div>
 
           {/* Status & Priority Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="input-field cursor-pointer"
               >
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="review">Under Review</option>
-                <option value="completed">Completed</option>
+                {STATUS_ENTRIES.map(([key, cfg]) => (
+                  <option key={key} value={key}>
+                    {cfg.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Priority
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="input-field cursor-pointer"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                {PRIORITY_ENTRIES.map(([key, cfg]) => (
+                  <option key={key} value={key}>
+                    {cfg.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -186,19 +192,19 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
           {/* Due Date & Tags */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Due Date
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="input-field cursor-pointer"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Tags (comma separated)
               </label>
               <input
@@ -206,45 +212,55 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 placeholder="e.g. Next.js, Docker, API"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-white/10 text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 placeholder-slate-500"
+                className="input-field"
               />
             </div>
           </div>
 
           {/* Subtasks Section */}
-          <div className="pt-2 border-t border-white/10">
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
+          <div className="pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
               Subtasks Checklist ({subtasks.filter((s) => s.completed).length}/{subtasks.length})
             </label>
 
             {/* Subtasks List */}
-            <div className="space-y-2 mb-3">
-              {subtasks.map((subtask, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-900/60 border border-white/5 text-xs"
-                >
-                  <label className="flex items-center gap-2 cursor-pointer flex-1">
-                    <input
-                      type="checkbox"
-                      checked={subtask.completed}
-                      onChange={() => handleToggleSubtask(index)}
-                      className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className={subtask.completed ? 'line-through text-slate-500' : 'text-slate-200'}>
-                      {subtask.title}
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSubtask(index)}
-                    className="text-slate-500 hover:text-rose-400 p-1 transition-colors"
+            {subtasks.length > 0 && (
+              <div className="space-y-1.5 mb-3">
+                {subtasks.map((subtask, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-2 p-2 rounded-lg text-xs"
+                    style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={subtask.completed}
+                        onChange={() => handleToggleSubtask(index)}
+                        className="rounded cursor-pointer"
+                        style={{ accentColor: 'var(--accent-blue)' }}
+                      />
+                      <span
+                        className="truncate"
+                        style={{
+                          textDecoration: subtask.completed ? 'line-through' : 'none',
+                          color: subtask.completed ? 'var(--text-muted)' : 'var(--text-primary)',
+                        }}
+                      >
+                        {subtask.title}
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSubtask(index)}
+                      className="btn-danger-icon w-6 h-6"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Add Subtask Input */}
             <div className="flex gap-2">
@@ -256,15 +272,15 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    handleAddSubtask(e);
+                    handleAddSubtask();
                   }
                 }}
-                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-white/10 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+                className="input-field text-xs py-1.5"
               />
               <button
                 type="button"
                 onClick={handleAddSubtask}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-medium text-indigo-300 hover:bg-slate-700 transition-all flex items-center gap-1"
+                className="btn-secondary text-xs py-1.5 px-3 flex-shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add</span>
@@ -273,18 +289,18 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, initial
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
+              className="btn-primary"
             >
               {isSubmitting ? 'Saving...' : taskToEdit ? 'Update Task' : 'Create Task'}
             </button>

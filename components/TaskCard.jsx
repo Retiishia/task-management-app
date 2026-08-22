@@ -2,15 +2,10 @@
 
 import { useRef } from 'react';
 import { Calendar, CheckSquare, Edit3, Trash2, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
+import appConfig from '@/data/appConfig.json';
 
-const PRIORITY_DOT = {
-  urgent: '#ef4444',
-  high:   '#fb923c',
-  medium: '#3b82f6',
-  low:    '#94a3b8',
-};
-
-const STATUS_ORDER = ['todo', 'in-progress', 'review', 'completed'];
+const STATUS_ORDER = appConfig.statusOrder;
+const PRIORITIES = appConfig.priorities;
 
 export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   const didDrag = useRef(false);
@@ -28,12 +23,12 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   const prevStatus = currentIdx > 0 ? STATUS_ORDER[currentIdx - 1] : null;
   const nextStatus = currentIdx < STATUS_ORDER.length - 1 ? STATUS_ORDER[currentIdx + 1] : null;
 
-  const dotColor = PRIORITY_DOT[task.priority] || PRIORITY_DOT.medium;
-  const priorityClass = `badge-${task.priority}`;
+  const priorityConfig = PRIORITIES[task.priority] || PRIORITIES.medium;
+  const dotColor = priorityConfig.color;
 
   return (
-    <div 
-      className="kanban-task-card group" 
+    <div
+      className="kanban-task-card group"
       onMouseDown={() => { didDrag.current = false; }}
       onMouseMove={() => { didDrag.current = true; }}
       onClick={() => { if (!didDrag.current) onEdit(task); }}
@@ -41,21 +36,21 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
     >
       {/* Top row: priority dot + title + actions */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-start gap-2 flex-1 min-w-0">
+        <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
             style={{ backgroundColor: dotColor }} />
-          <h4 className="text-sm font-semibold leading-snug line-clamp-2"
+          <h4 className="text-sm sm:text-base font-semibold leading-snug line-clamp-2"
             style={{ color: 'var(--text-primary)' }}>
             {task.title}
           </h4>
         </div>
-        <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        <div className="flex items-center gap-1 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
           onClick={(e) => e.stopPropagation()}>
-          <button onClick={() => onEdit(task)} className="btn-icon w-6 h-6" title="Edit">
-            <Edit3 className="w-3 h-3" />
+          <button onClick={() => onEdit(task)} className="btn-icon w-7 h-7 sm:w-6 sm:h-6" title="Edit">
+            <Edit3 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
           </button>
-          <button onClick={() => onDelete(task._id)} className="btn-danger-icon w-6 h-6" title="Delete">
-            <Trash2 className="w-3 h-3" />
+          <button onClick={() => onDelete(task._id)} className="btn-danger-icon w-7 h-7 sm:w-6 sm:h-6" title="Delete">
+            <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
           </button>
         </div>
       </div>

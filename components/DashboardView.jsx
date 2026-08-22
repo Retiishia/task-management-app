@@ -5,20 +5,10 @@ import {
   TrendingUp, Plus, ArrowRight, Calendar, Layers,
   Target, Zap
 } from 'lucide-react';
+import appConfig from '@/data/appConfig.json';
 
-const STATUS_CONFIG = {
-  'todo':        { label: 'To Do',        color: '#fb923c', bg: 'rgba(251,146,60,0.1)',  dot: '#fb923c' },
-  'in-progress': { label: 'In Progress',  color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', dot: '#3b82f6' },
-  'review':      { label: 'Under Review', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', dot: '#a855f7' },
-  'completed':   { label: 'Completed',    color: '#10b981', bg: 'rgba(16,185,129,0.1)', dot: '#10b981' },
-};
-
-const PRIORITY_COLOR = {
-  urgent: '#ef4444',
-  high:   '#fb923c',
-  medium: '#3b82f6',
-  low:    '#94a3b8',
-};
+const STATUS_CONFIG = appConfig.statuses;
+const PRIORITIES = appConfig.priorities;
 
 function formatDate(dateStr) {
   if (!dateStr) return null;
@@ -42,12 +32,12 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
     .slice(0, 5);
 
   // Overdue tasks
-  const overdueTasks = tasks.filter(t =>
+  const overdueTasks = tasks.filter((t) =>
     t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
   );
 
   // Tasks due today or tomorrow
-  const urgentSoon = tasks.filter(t => {
+  const urgentSoon = tasks.filter((t) => {
     if (!t.dueDate || t.status === 'completed') return false;
     const due = new Date(t.dueDate);
     const diff = (due - new Date()) / (1000 * 60 * 60 * 24);
@@ -58,7 +48,7 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
   const statusBreakdown = Object.entries(STATUS_CONFIG).map(([key, cfg]) => ({
     ...cfg,
     key,
-    count: tasks.filter(t => t.status === key).length,
+    count: tasks.filter((t) => t.status === key).length,
   }));
 
   const completionPct = stats?.completionRate || 0;
@@ -125,8 +115,10 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
               <p className="text-[11px] sm:text-xs font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
                 {label}
               </p>
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: bg }}>
+              <div
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: bg }}
+              >
                 <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color }} />
               </div>
             </div>
@@ -158,7 +150,7 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
           </div>
 
           <div className="space-y-3">
-            {statusBreakdown.map(({ key, label, color, bg, count }) => {
+            {statusBreakdown.map(({ key, label, color, count }) => {
               const pct = stats?.total > 0 ? Math.round((count / stats.total) * 100) : 0;
               return (
                 <div key={key}>
@@ -170,18 +162,15 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold"
-                        style={{ color: 'var(--text-primary)' }}>
+                      <span className="text-xs font-mono font-semibold" style={{ color: 'var(--text-primary)' }}>
                         {count}
                       </span>
-                      <span className="text-[10px] w-8 text-right"
-                        style={{ color: 'var(--text-muted)' }}>
+                      <span className="text-[10px] w-8 text-right" style={{ color: 'var(--text-muted)' }}>
                         {pct}%
                       </span>
                     </div>
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: 'var(--bg-hover)' }}>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-hover)' }}>
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: color }}
@@ -202,8 +191,7 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
                 {completionPct}%
               </span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden"
-              style={{ backgroundColor: 'var(--bg-hover)' }}>
+            <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-hover)' }}>
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
@@ -233,9 +221,12 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
             </div>
           ) : (
             <div className="space-y-2">
-              {overdueTasks.slice(0, 3).map(t => (
-                <div key={t._id} className="p-2.5 rounded-lg"
-                  style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+              {overdueTasks.slice(0, 3).map((t) => (
+                <div
+                  key={t._id}
+                  className="p-2.5 rounded-lg"
+                  style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}
+                >
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#ef4444' }} />
                     <div className="min-w-0">
@@ -249,9 +240,12 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
                   </div>
                 </div>
               ))}
-              {urgentSoon.slice(0, 2).map(t => (
-                <div key={t._id} className="p-2.5 rounded-lg"
-                  style={{ background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.15)' }}>
+              {urgentSoon.slice(0, 2).map((t) => (
+                <div
+                  key={t._id}
+                  className="p-2.5 rounded-lg"
+                  style={{ background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.15)' }}
+                >
                   <div className="flex items-start gap-2">
                     <Calendar className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: '#fb923c' }} />
                     <div className="min-w-0">
@@ -272,8 +266,7 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
 
       {/* Recent Tasks */}
       <div className="card-flat rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b"
-          style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             Recent Tasks
           </h2>
@@ -294,9 +287,12 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
           <table className="w-full text-left">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Task', 'Status', 'Priority', 'Due Date'].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--text-muted)', background: 'var(--bg-tertiary)' }}>
+                {['Task', 'Status', 'Priority', 'Due Date'].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ color: 'var(--text-muted)', background: 'var(--bg-tertiary)' }}
+                  >
                     {h}
                   </th>
                 ))}
@@ -305,35 +301,46 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
             <tbody>
               {recentTasks.map((task, i) => {
                 const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
+                const priorityCfg = PRIORITIES[task.priority] || PRIORITIES['medium'];
                 return (
-                  <tr key={task._id}
-                    style={{ borderBottom: i < recentTasks.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                  <tr
+                    key={task._id}
+                    style={{ borderBottom: i < recentTasks.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: PRIORITY_COLOR[task.priority] || '#94a3b8' }} />
-                        <span className="text-xs font-medium truncate max-w-[200px]"
-                          style={{ color: 'var(--text-primary)' }}>
+                        <div
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: priorityCfg.color }}
+                        />
+                        <span className="text-xs font-medium truncate max-w-[200px]" style={{ color: 'var(--text-primary)' }}>
                           {task.title}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full"
-                        style={{ background: statusCfg.bg, color: statusCfg.color }}>
+                      <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full"
+                        style={{ background: statusCfg.bg, color: statusCfg.color }}
+                      >
                         <div className="w-1 h-1 rounded-full" style={{ backgroundColor: statusCfg.dot }} />
                         {statusCfg.label}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs capitalize font-medium"
-                        style={{ color: PRIORITY_COLOR[task.priority] || '#94a3b8' }}>
+                      <span className="text-xs capitalize font-medium" style={{ color: priorityCfg.color }}>
                         {task.priority}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs"
-                      style={{ color: task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
-                        ? '#ef4444' : 'var(--text-secondary)' }}>
+                    <td
+                      className="px-4 py-3 text-xs"
+                      style={{
+                        color:
+                          task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
+                            ? '#ef4444'
+                            : 'var(--text-secondary)',
+                      }}
+                    >
                       {task.dueDate ? formatDate(task.dueDate) : '—'}
                     </td>
                   </tr>

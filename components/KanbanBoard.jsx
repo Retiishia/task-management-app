@@ -2,42 +2,20 @@
 
 import { useState } from 'react';
 import TaskCard from './TaskCard';
-import { Circle, Clock, Eye, CheckCircle2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import appConfig from '@/data/appConfig.json';
 
-const COLUMNS = [
-  {
-    id: 'todo',
-    title: 'To Do',
-    dotColor: 'bg-orange-400',
-    accentColor: '#fb923c',
-  },
-  {
-    id: 'in-progress',
-    title: 'In Progress',
-    dotColor: 'bg-blue-400',
-    accentColor: '#3b82f6',
-  },
-  {
-    id: 'review',
-    title: 'Under Review',
-    dotColor: 'bg-purple-400',
-    accentColor: '#a855f7',
-  },
-  {
-    id: 'completed',
-    title: 'Completed',
-    dotColor: 'bg-emerald-400',
-    accentColor: '#10b981',
-  },
-];
+const COLUMNS = appConfig.columns;
 
 export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, onOpenNewTaskModal }) {
-  // Which column is currently being dragged over
+  // Drag and drop state
   const [dragOverColumn, setDragOverColumn] = useState(null);
-  // The task being dragged
   const [draggingTaskId, setDraggingTaskId] = useState(null);
 
-  // ── Drag handlers (attached to TaskCard wrapper) ──────────────
+  // Mobile active column tab filter ('all' or column id)
+  const [mobileActiveCol, setMobileActiveCol] = useState('all');
+
+  // ── Drag handlers ───────────────────────────────────────────
   const handleDragStart = (e, taskId) => {
     setDraggingTaskId(taskId);
     e.dataTransfer.effectAllowed = 'move';
@@ -49,7 +27,7 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
     setDragOverColumn(null);
   };
 
-  // ── Drop handlers (attached to column) ───────────────────────
+  // ── Drop handlers ───────────────────────────────────────────
   const handleDragOver = (e, columnId) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -57,7 +35,6 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
   };
 
   const handleDragLeave = (e) => {
-    // Only clear if leaving the column entirely (not entering a child)
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setDragOverColumn(null);
     }
@@ -71,108 +48,158 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
 
     if (!taskId) return;
 
-    const task = tasks.find(t => t._id === taskId);
-    if (!task || task.status === targetColumnId) return; // No change needed
+    const task = tasks.find((t) => t._id === taskId);
+    if (!task || task.status === targetColumnId) return;
 
     onStatusChange(taskId, targetColumnId);
   };
 
+  const visibleColumns =
+    mobileActiveCol === 'all'
+      ? COLUMNS
+      : COLUMNS.filter((c) => c.id === mobileActiveCol);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 items-start">
-      {COLUMNS.map((col) => {
-        const colTasks = tasks.filter((t) => t.status === col.id);
-        const isDragTarget = dragOverColumn === col.id;
+    <div className="space-y-3">
+      {/* Mobile Column Switcher (Tab Bar) */}
+      <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        <button
+          onClick={() => setMobileActiveCol('all')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+            mobileActiveCol === 'all'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'card-flat text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          All Columns ({tasks.length})
+        </button>
+        {COLUMNS.map((col) => {
+          const count = tasks.filter((t) => t.status === col.id).length;
+          const isActive = mobileActiveCol === col.id;
+          return (
+            <button
+              key={col.id}
+              onClick={() => setMobileActiveCol(col.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'card-flat text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+              <span>{col.title}</span>
+              <span className="opacity-75 font-mono">({count})</span>
+            </button>
+          );
+        })}
+      </div>
 
-        return (
-          <div
-            key={col.id}
-            className="kanban-column"
-            style={{
-              maxHeight: 'calc(100vh - 260px)',
-              border: isDragTarget
-                ? `2px dashed ${col.accentColor}`
-                : '1px solid var(--border)',
-              background: isDragTarget
-                ? `rgba(${col.id === 'todo' ? '251,146,60' : col.id === 'in-progress' ? '59,130,246' : col.id === 'review' ? '168,85,247' : '16,185,129'}, 0.04)`
-                : 'var(--bg-secondary)',
-              transition: 'border 0.15s, background 0.15s',
-              borderRadius: '10px',
-            }}
-            onDragOver={(e) => handleDragOver(e, col.id)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, col.id)}
-          >
-            {/* Column Header */}
-            <div className="kanban-column-header">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${col.dotColor}`} />
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  {col.title}
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-mono font-medium"
-                  style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}>
-                  {colTasks.length}
-                </span>
-              </div>
-              <button
-                onClick={() => onOpenNewTaskModal(col.id)}
-                title={`Add to ${col.title}`}
-                className="btn-icon"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
+      {/* Columns Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 items-start">
+        {visibleColumns.map((col) => {
+          const colTasks = tasks.filter((t) => t.status === col.id);
+          const isDragTarget = dragOverColumn === col.id;
 
-            {/* Tasks */}
-            <div className="flex-1 overflow-y-auto space-y-2.5">
-              {colTasks.length === 0 ? (
-                <div
-                  className="text-center py-10 px-4 rounded-lg border border-dashed transition-all"
-                  style={{
-                    borderColor: isDragTarget ? col.accentColor : 'var(--border)',
-                    color: isDragTarget ? col.accentColor : 'var(--text-muted)',
-                  }}
-                >
-                  <p className="text-xs font-medium">
-                    {isDragTarget ? '⬇ Drop here' : 'No tasks here'}
-                  </p>
+          return (
+            <div
+              key={col.id}
+              className="kanban-column"
+              style={{
+                border: isDragTarget
+                  ? `2px dashed ${col.accentColor}`
+                  : '1px solid var(--border)',
+                background: isDragTarget
+                  ? `rgba(${
+                      col.id === 'todo'
+                        ? '251,146,60'
+                        : col.id === 'in-progress'
+                        ? '59,130,246'
+                        : col.id === 'review'
+                        ? '168,85,247'
+                        : '16,185,129'
+                    }, 0.05)`
+                  : 'var(--bg-secondary)',
+                transition: 'border 0.15s, background 0.15s',
+                borderRadius: '10px',
+              }}
+              onDragOver={(e) => handleDragOver(e, col.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, col.id)}
+            >
+              {/* Column Header */}
+              <div className="kanban-column-header">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${col.dotColor}`} />
+                  <span className="text-sm sm:text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {col.title}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-mono font-semibold"
+                    style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                  >
+                    {colTasks.length}
+                  </span>
                 </div>
-              ) : (
-                colTasks.map((task) => (
+                <button
+                  onClick={() => onOpenNewTaskModal(col.id)}
+                  title={`Add to ${col.title}`}
+                  className="btn-icon"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Tasks List */}
+              <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[calc(100vh-280px)]">
+                {colTasks.length === 0 ? (
                   <div
-                    key={task._id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, task._id)}
-                    onDragEnd={handleDragEnd}
+                    className="text-center py-8 px-4 rounded-lg border border-dashed transition-all"
                     style={{
-                      opacity: draggingTaskId === task._id ? 0.4 : 1,
-                      cursor: 'grab',
-                      transition: 'opacity 0.15s',
+                      borderColor: isDragTarget ? col.accentColor : 'var(--border)',
+                      color: isDragTarget ? col.accentColor : 'var(--text-muted)',
                     }}
                   >
-                    <TaskCard
-                      task={task}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                      onStatusChange={onStatusChange}
-                    />
+                    <p className="text-xs sm:text-sm font-medium">
+                      {isDragTarget ? '⬇ Drop here' : 'No tasks here'}
+                    </p>
                   </div>
-                ))
-              )}
+                ) : (
+                  colTasks.map((task) => (
+                    <div
+                      key={task._id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task._id)}
+                      onDragEnd={handleDragEnd}
+                      style={{
+                        opacity: draggingTaskId === task._id ? 0.4 : 1,
+                        cursor: 'grab',
+                        transition: 'opacity 0.15s',
+                      }}
+                    >
+                      <TaskCard
+                        task={task}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onStatusChange={onStatusChange}
+                      />
+                    </div>
+                  ))
+                )}
 
-              {/* Drop zone hint at bottom when dragging over a non-empty column */}
-              {isDragTarget && colTasks.length > 0 && (
-                <div
-                  className="text-center py-3 rounded-lg border border-dashed text-xs font-medium"
-                  style={{ borderColor: col.accentColor, color: col.accentColor }}
-                >
-                  ⬇ Drop here
-                </div>
-              )}
+                {/* Drop target hint */}
+                {isDragTarget && colTasks.length > 0 && (
+                  <div
+                    className="text-center py-3 rounded-lg border border-dashed text-xs font-semibold"
+                    style={{ borderColor: col.accentColor, color: col.accentColor }}
+                  >
+                    ⬇ Drop here
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

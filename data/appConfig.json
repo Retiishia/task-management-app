@@ -1,0 +1,166 @@
+{
+  "app": {
+    "name": "TaskFlow Pro",
+    "tagline": "Organize your work. Ship faster.",
+    "version": "1.0.0"
+  },
+  "columns": [
+    {
+      "id": "todo",
+      "title": "To Do",
+      "dotColor": "bg-orange-400",
+      "accentColor": "#fb923c",
+      "icon": "Circle"
+    },
+    {
+      "id": "in-progress",
+      "title": "In Progress",
+      "dotColor": "bg-blue-400",
+      "accentColor": "#3b82f6",
+      "icon": "Clock"
+    },
+    {
+      "id": "review",
+      "title": "Under Review",
+      "dotColor": "bg-purple-400",
+      "accentColor": "#a855f7",
+      "icon": "Eye"
+    },
+    {
+      "id": "completed",
+      "title": "Completed",
+      "dotColor": "bg-emerald-400",
+      "accentColor": "#10b981",
+      "icon": "CheckCircle2"
+    }
+  ],
+  "statusOrder": ["todo", "in-progress", "review", "completed"],
+  "statuses": {
+    "todo": {
+      "label": "To Do",
+      "color": "#fb923c",
+      "bg": "rgba(251,146,60,0.1)",
+      "dot": "#fb923c"
+    },
+    "in-progress": {
+      "label": "In Progress",
+      "color": "#3b82f6",
+      "bg": "rgba(59,130,246,0.1)",
+      "dot": "#3b82f6"
+    },
+    "review": {
+      "label": "Under Review",
+      "color": "#a855f7",
+      "bg": "rgba(168,85,247,0.1)",
+      "dot": "#a855f7"
+    },
+    "completed": {
+      "label": "Completed",
+      "color": "#10b981",
+      "bg": "rgba(16,185,129,0.1)",
+      "dot": "#10b981"
+    }
+  },
+  "priorities": {
+    "urgent": {
+      "label": "Urgent",
+      "color": "#ef4444",
+      "bg": "rgba(239,68,68,0.12)",
+      "border": "rgba(239,68,68,0.25)"
+    },
+    "high": {
+      "label": "High",
+      "color": "#fb923c",
+      "bg": "rgba(251,146,60,0.12)",
+      "border": "rgba(251,146,60,0.25)"
+    },
+    "medium": {
+      "label": "Medium",
+      "color": "#3b82f6",
+      "bg": "rgba(37,99,235,0.12)",
+      "border": "rgba(37,99,235,0.25)"
+    },
+    "low": {
+      "label": "Low",
+      "color": "#94a3b8",
+      "bg": "rgba(100,116,139,0.12)",
+      "border": "rgba(100,116,139,0.25)"
+    }
+  },
+  "pageTitles": {
+    "dashboard": "Dashboard",
+    "kanban": "My Tasks",
+    "analytics": "Analytics"
+  },
+  "navItems": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "icon": "LayoutDashboard"
+    },
+    {
+      "id": "kanban",
+      "label": "My Tasks",
+      "icon": "ListTodo"
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics",
+      "icon": "BarChart2"
+    }
+  ],
+  "landingFeatures": [
+    {
+      "label": "Email OTP Verification",
+      "icon": "ShieldCheck",
+      "color": "#10b981"
+    },
+    {
+      "label": "Kanban & List Views",
+      "icon": "Layers",
+      "color": "#2563eb"
+    },
+    {
+      "label": "Per-user task isolation",
+      "icon": "Sparkles",
+      "color": "#8b5cf6"
+    }
+  ],
+  "metricsStats": [
+    {
+      "key": "total",
+      "label": "Total Tasks",
+      "icon": "Layers",
+      "color": "#2563eb",
+      "bgColor": "rgba(37,99,235,0.1)"
+    },
+    {
+      "key": "completionRate",
+      "label": "Completion Rate",
+      "icon": "TrendingUp",
+      "color": "#10b981",
+      "bgColor": "rgba(16,185,129,0.1)"
+    },
+    {
+      "key": "inProgress",
+      "label": "In Progress",
+      "icon": "Clock",
+      "color": "#06b6d4",
+      "bgColor": "rgba(6,182,212,0.1)"
+    },
+    {
+      "key": "completed",
+      "label": "Completed",
+      "icon": "CheckCircle",
+      "color": "#8b5cf6",
+      "bgColor": "rgba(139,92,246,0.1)"
+    },
+    {
+      "key": "urgent",
+      "label": "Urgent",
+      "icon": "AlertTriangle",
+      "color": "#ef4444",
+      "bgColor": "rgba(239,68,68,0.1)"
+    }
+  ]
+}

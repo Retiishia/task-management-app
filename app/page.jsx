@@ -9,10 +9,17 @@ import TaskModal from '@/components/TaskModal';
 import AuthModal from '@/components/AuthModal';
 import VerificationModal from '@/components/VerificationModal';
 import { ToastProvider, useToast } from '@/components/Toast';
+import appConfig from '@/data/appConfig.json';
 import {
   Search, Filter, LayoutGrid, List, RefreshCcw,
   Layers, Edit3, Trash2, ShieldCheck, LogIn, Sparkles, Plus, Menu
 } from 'lucide-react';
+
+const LANDING_ICON_MAP = {
+  ShieldCheck,
+  Layers,
+  Sparkles,
+};
 
 function TaskManagementApp() {
   const toast = useToast();
@@ -200,11 +207,7 @@ function TaskManagementApp() {
   };
 
   // ─── Page Title by View ───────────────────────────────────
-  const PAGE_TITLE = {
-    dashboard: 'Dashboard',
-    kanban: 'My Tasks',
-    analytics: 'Analytics',
-  };
+  const PAGE_TITLE = appConfig.pageTitles;
 
   return (
     <div className="app-layout">
@@ -240,7 +243,7 @@ function TaskManagementApp() {
             </button>
 
             <div className="flex-1">
-              <h1 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <h1 className="text-sm sm:text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                 {PAGE_TITLE[activeView] || 'Dashboard'}
               </h1>
             </div>
@@ -335,27 +338,26 @@ function TaskManagementApp() {
                 </div>
 
                 <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                  TaskFlow Pro
+                  {appConfig.app.name}
                 </h1>
                 <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-                  Organize your work. Ship faster.
+                  {appConfig.app.tagline}
                 </p>
 
                 {/* Feature List */}
                 <div className="space-y-3 mb-8 text-left">
-                  {[
-                    { icon: ShieldCheck, label: 'Email OTP Verification', color: '#10b981' },
-                    { icon: Layers, label: 'Kanban & List Views', color: '#2563eb' },
-                    { icon: Sparkles, label: 'Per-user task isolation', color: '#8b5cf6' },
-                  ].map(({ icon: Icon, label, color }) => (
-                    <div key={label} className="flex items-center gap-3 p-3 rounded-lg"
-                      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-                      <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
-                      <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        {label}
-                      </span>
-                    </div>
-                  ))}
+                  {appConfig.landingFeatures.map(({ icon: iconName, label, color }) => {
+                    const Icon = LANDING_ICON_MAP[iconName] || ShieldCheck;
+                    return (
+                      <div key={label} className="flex items-center gap-3 p-3 rounded-lg"
+                        style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+                        <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
+                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {label}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <button
