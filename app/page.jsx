@@ -390,14 +390,8 @@ function TaskManagementApp() {
                   onChangeView={setActiveView}
                 />
               ) : activeView === 'todolist' ? (
-                /* Dedicated To-Do Checklist View */
-                <TodoListView
-                  tasks={tasks}
-                  onSaveTask={handleSaveTask}
-                  onDeleteTask={handleDeleteTask}
-                  onStatusChange={handleStatusChange}
-                  onEditTask={handleOpenEditModal}
-                />
+                /* Dedicated Personal To-Do Checklist View */
+                <TodoListView />
               ) : activeView === 'analytics' ? (
                 /* Analytics — shows metrics overview */
                 <>
