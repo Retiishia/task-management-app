@@ -9,6 +9,7 @@ import CalendarView from '@/components/CalendarView';
 import TaskModal from '@/components/TaskModal';
 import AuthModal from '@/components/AuthModal';
 import VerificationModal from '@/components/VerificationModal';
+import BottomNav from '@/components/BottomNav';
 import { ToastProvider, useToast } from '@/components/Toast';
 import { exportTasksToCSV, exportTasksToJSON } from '@/lib/exportUtils';
 import navigationConfig from '@/data/navigation.json';
@@ -700,6 +701,16 @@ function TaskManagementApp() {
           )}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      {user && (
+        <BottomNav
+          activeView={activeView}
+          onChangeView={setActiveView}
+          onOpenNewTaskModal={handleOpenCreateModal}
+          onOpenSidebar={() => setMobileOpen(true)}
+        />
+      )}
 
       {/* Modals */}
       <TaskModal

@@ -293,70 +293,122 @@ export default function DashboardView({ user, stats, tasks, onOpenNewTaskModal, 
             <p className="text-xs">No tasks yet. Create your first task!</p>
           </div>
         ) : (
-          <table className="w-full text-left">
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Task', 'Status', 'Priority', 'Due Date'].map((h) => (
-                  <th
-                    key={h}
-                    className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--text-muted)', background: 'var(--bg-tertiary)' }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recentTasks.map((task, i) => {
+          <>
+            {/* Mobile Card List (< md) */}
+            <div className="block md:hidden divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+              {recentTasks.map((task) => {
                 const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
                 const priorityCfg = PRIORITIES[task.priority] || PRIORITIES['medium'];
                 return (
-                  <tr
-                    key={task._id}
-                    style={{ borderBottom: i < recentTasks.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                  <div key={task._id} className="p-3 space-y-2 hover:bg-[var(--bg-hover)] transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div
-                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          className="w-2 h-2 rounded-full flex-shrink-0"
                           style={{ backgroundColor: priorityCfg.color }}
                         />
-                        <span className="text-xs font-medium truncate max-w-[200px]" style={{ color: 'var(--text-primary)' }}>
+                        <span className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                           {task.title}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                      <span className="text-[10px] capitalize font-medium px-1.5 py-0.5 rounded" style={{ background: `${priorityCfg.color}15`, color: priorityCfg.color }}>
+                        {task.priority}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] pl-4">
                       <span
-                        className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full"
+                        className="inline-flex items-center gap-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full"
                         style={{ background: statusCfg.bg, color: statusCfg.color }}
                       >
                         <div className="w-1 h-1 rounded-full" style={{ backgroundColor: statusCfg.dot }} />
                         {statusCfg.label}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs capitalize font-medium" style={{ color: priorityCfg.color }}>
-                        {task.priority}
+                      <span
+                        className="text-[10px]"
+                        style={{
+                          color:
+                            task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
+                              ? '#ef4444'
+                              : 'var(--text-muted)',
+                        }}
+                      >
+                        {task.dueDate ? `Due ${formatDate(task.dueDate)}` : 'No date'}
                       </span>
-                    </td>
-                    <td
-                      className="px-4 py-3 text-xs"
-                      style={{
-                        color:
-                          task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
-                            ? '#ef4444'
-                            : 'var(--text-secondary)',
-                      }}
-                    >
-                      {task.dueDate ? formatDate(task.dueDate) : '—'}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Desktop Table (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['Task', 'Status', 'Priority', 'Due Date'].map((h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: 'var(--text-muted)', background: 'var(--bg-tertiary)' }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentTasks.map((task, i) => {
+                    const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG['todo'];
+                    const priorityCfg = PRIORITIES[task.priority] || PRIORITIES['medium'];
+                    return (
+                      <tr
+                        key={task._id}
+                        style={{ borderBottom: i < recentTasks.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: priorityCfg.color }}
+                            />
+                            <span className="text-xs font-medium truncate max-w-[240px]" style={{ color: 'var(--text-primary)' }}>
+                              {task.title}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full"
+                            style={{ background: statusCfg.bg, color: statusCfg.color }}
+                          >
+                            <div className="w-1 h-1 rounded-full" style={{ backgroundColor: statusCfg.dot }} />
+                            {statusCfg.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs capitalize font-medium" style={{ color: priorityCfg.color }}>
+                            {task.priority}
+                          </span>
+                        </td>
+                        <td
+                          className="px-4 py-3 text-xs"
+                          style={{
+                            color:
+                              task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
+                                ? '#ef4444'
+                                : 'var(--text-secondary)',
+                          }}
+                        >
+                          {task.dueDate ? formatDate(task.dueDate) : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
