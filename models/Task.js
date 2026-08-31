@@ -12,6 +12,60 @@ const SubtaskSchema = new mongoose.Schema({
   },
 });
 
+const CommentSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  userName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  text: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const ActivityLogSchema = new mongoose.Schema({
+  userName: {
+    type: String,
+    default: 'User',
+  },
+  action: {
+    type: String,
+    required: true,
+  },
+  details: {
+    type: String,
+    default: '',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const ResourceLinkSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  url: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+});
+
 const TaskSchema = new mongoose.Schema(
   {
     user: {
@@ -34,7 +88,7 @@ const TaskSchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ['todo', 'in-progress', 'review', 'completed'],
+      enum: ['planning', 'todo', 'in-progress', 'review', 'completed'],
       default: 'todo',
     },
     priority: {
@@ -53,6 +107,18 @@ const TaskSchema = new mongoose.Schema(
     },
     subtasks: {
       type: [SubtaskSchema],
+      default: [],
+    },
+    comments: {
+      type: [CommentSchema],
+      default: [],
+    },
+    activityLog: {
+      type: [ActivityLogSchema],
+      default: [],
+    },
+    links: {
+      type: [ResourceLinkSchema],
       default: [],
     },
   },

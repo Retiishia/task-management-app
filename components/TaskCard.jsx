@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { Calendar, CheckSquare, Edit3, Trash2, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Calendar, CheckSquare, Edit3, Trash2, AlertCircle, ChevronRight, ChevronLeft, MessageSquare, Link2 } from 'lucide-react';
 import appConfig from '@/data/appConfig.json';
 
 const STATUS_ORDER = appConfig.statusOrder;
@@ -12,6 +12,9 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0;
   const totalSubtasks = task.subtasks?.length || 0;
   const subtaskPct = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+
+  const commentsCount = task.comments?.length || 0;
+  const linksCount = task.links?.length || 0;
 
   const dueDateObj = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dueDateObj && dueDateObj < new Date() && task.status !== 'completed';
@@ -97,23 +100,44 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
         </div>
       )}
 
-      {/* Footer: due date + quick move */}
-      <div className="flex items-center justify-between pt-2 border-t pl-4"
+      {/* Footer: due date + meta badges (comments & links) + quick move */}
+      <div className="flex items-center justify-between pt-2 border-t pl-4 gap-2"
         style={{ borderColor: 'var(--border-subtle)' }}
         onClick={(e) => e.stopPropagation()}>
-        {formattedDue ? (
-          <div className={`flex items-center gap-1 text-[11px] ${
-            isOverdue ? 'text-red-400' : ''
-          }`} style={!isOverdue ? { color: 'var(--text-muted)' } : {}}>
-            {isOverdue
-              ? <AlertCircle className="w-3 h-3" />
-              : <Calendar className="w-3 h-3" />
-            }
-            {formattedDue}
-          </div>
-        ) : <span />}
+        
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          {/* Due date */}
+          {formattedDue && (
+            <div className={`flex items-center gap-1 text-[11px] flex-shrink-0 ${
+              isOverdue ? 'text-red-400 font-medium' : ''
+            }`} style={!isOverdue ? { color: 'var(--text-muted)' } : {}}>
+              {isOverdue
+                ? <AlertCircle className="w-3 h-3" />
+                : <Calendar className="w-3 h-3" />
+              }
+              {formattedDue}
+            </div>
+          )}
 
-        <div className="flex items-center gap-0.5">
+          {/* Comments badge */}
+          {commentsCount > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-blue-400 font-medium" title={`${commentsCount} comments`}>
+              <MessageSquare className="w-3 h-3" />
+              <span>{commentsCount}</span>
+            </div>
+          )}
+
+          {/* Links badge */}
+          {linksCount > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-cyan-400 font-medium" title={`${linksCount} resource links`}>
+              <Link2 className="w-3 h-3" />
+              <span>{linksCount}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Status switcher arrows */}
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {prevStatus && (
             <button
               onClick={() => onStatusChange(task._id, prevStatus)}

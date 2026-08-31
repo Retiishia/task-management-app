@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'TaskFlow Pro | Modern Task Management',
+  title: 'Retiishia Tasks Project | Modern Task Management',
   description: 'Full-stack Task Management Application designed for learning Next.js, MongoDB, and Docker.',
 };
 

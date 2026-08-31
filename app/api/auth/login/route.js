@@ -3,11 +3,25 @@ import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import { comparePassword, generateToken } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    const rl = rateLimit(`login:${ip}`, 5, 15 * 60 * 1000); // 5 attempts per 15 min per IP
+
+    if (!rl.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many login attempts. Please try again in ${Math.ceil(rl.retryAfterSec / 60)} minutes.`,
+        },
+        { status: 429 }
+      );
+    }
+
     await dbConnect();
     const { email, password } = await request.json();
 

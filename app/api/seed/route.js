@@ -28,8 +28,29 @@ export async function POST(request) {
       status: t.status,
       priority: t.priority,
       dueDate: new Date(Date.now() + 86400000 * (t.dueDaysOffset || 1)),
-      tags: t.tags,
-      subtasks: t.subtasks,
+      tags: t.tags || [],
+      subtasks: t.subtasks || [],
+      links: t.links || [],
+      comments: (t.comments || []).map((c) => ({
+        user: authUser.userId,
+        userName: c.userName || authUser.name || 'You',
+        text: c.text,
+        createdAt: new Date(Date.now() - 3600000 * (c.hoursAgo || 1)),
+      })),
+      activityLog: [
+        {
+          userName: authUser.name || 'You',
+          action: 'created task',
+          details: `Initial status: ${(t.status || 'todo').replace('-', ' ')}`,
+          createdAt: new Date(Date.now() - 86400000),
+        },
+        ...(t.activityLog || []).map((a) => ({
+          userName: a.userName || authUser.name || 'You',
+          action: a.action,
+          details: a.details || '',
+          createdAt: new Date(Date.now() - 3600000 * (a.hoursAgo || 2)),
+        })),
+      ],
       user: authUser.userId,
     }));
 

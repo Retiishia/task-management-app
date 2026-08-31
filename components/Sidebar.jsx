@@ -2,7 +2,7 @@
 
 import {
   CheckCircle2, LayoutDashboard, ListTodo, BarChart2, CheckSquare,
-  Sun, Moon, LogOut, ShieldCheck, Database,
+  LogOut, ShieldCheck, Database,
   Plus, RefreshCw, X
 } from 'lucide-react';
 import navigationConfig from '@/data/navigation.json';
@@ -22,8 +22,6 @@ const NAV_ITEMS = navigationConfig.navItems.map((item) => ({
 
 export default function Sidebar({
   user,
-  theme,
-  onToggleTheme,
   onLogout,
   onOpenNewTaskModal,
   onSeedData,
@@ -46,37 +44,49 @@ export default function Sidebar({
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50"
+          className="fixed inset-0 z-40 bg-black/60 transition-opacity"
           onClick={onMobileClose}
-          style={{ backdropFilter: 'blur(2px)' }}
+          style={{ backdropFilter: 'blur(3px)' }}
         />
       )}
 
       {/* Sidebar panel */}
-      <aside className="sidebar">
-        {/* Logo */}
-        <div className="p-5 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #06b6d4)' }}
-            >
-              <CheckCircle2 className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                {landingConfig.app.name}
-              </p>
-              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                v{landingConfig.app.version}
-              </p>
+      <aside className={`sidebar ${mobileOpen ? 'sidebar--open' : ''}`}>
+        {/* Top: User Profile */}
+        {user && (
+          <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #2563eb, #06b6d4)' }}
+                >
+                  <span className="text-xs font-bold text-white">
+                    {user.name?.[0]?.toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                    {user.name}
+                  </p>
+                  <p className="text-[10px] truncate flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                    {isAdmin && <ShieldCheck className="w-2.5 h-2.5 text-blue-400" />}
+                    {isAdmin ? 'Admin' : 'Member'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={onLogout} title="Sign Out" className="btn-icon flex-shrink-0">
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+                {/* Mobile close button */}
+                <button onClick={onMobileClose} className="btn-icon lg:hidden">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-          {/* Mobile close button */}
-          <button onClick={onMobileClose} className="btn-icon lg:hidden">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        )}
 
         {/* Nav Links */}
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
@@ -121,64 +131,35 @@ export default function Sidebar({
           )}
         </nav>
 
-        {/* Bottom Actions */}
+        {/* Bottom: Seed Data + Branding */}
         <div className="p-3 space-y-0.5 border-t" style={{ borderColor: 'var(--border)' }}>
           {user && (
-            <>
-              <button
-                onClick={() => {
-                  onOpenNewTaskModal('todo');
-                  onMobileClose?.();
-                }}
-                className="nav-item w-full text-left"
-                style={{ color: 'var(--accent-blue-light)' }}
-              >
-                <Plus className="w-4 h-4" />
-                New Task
-              </button>
-              <button
-                onClick={onSeedData}
-                disabled={isSeeding}
-                className="nav-item w-full text-left"
-              >
-                <RefreshCw className={`w-4 h-4 ${isSeeding ? 'animate-spin' : ''}`} />
-                {isSeeding ? 'Seeding...' : 'Seed Sample Data'}
-              </button>
-            </>
+            <button
+              onClick={onSeedData}
+              disabled={isSeeding}
+              className="nav-item w-full text-left"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSeeding ? 'animate-spin' : ''}`} />
+              {isSeeding ? 'Seeding...' : 'Seed Sample Data'}
+            </button>
           )}
 
-          <button onClick={onToggleTheme} className="nav-item w-full text-left">
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </button>
-
-          {/* User Profile */}
-          {user && (
-            <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: 'var(--bg-hover)' }}>
-                <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #2563eb, #06b6d4)' }}
-                >
-                  <span className="text-xs font-bold text-white">
-                    {user.name?.[0]?.toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-                    {user.name}
-                  </p>
-                  <p className="text-[10px] truncate flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                    {isAdmin && <ShieldCheck className="w-2.5 h-2.5 text-blue-400" />}
-                    {isAdmin ? 'Admin' : 'Member'}
-                  </p>
-                </div>
-                <button onClick={onLogout} title="Sign Out" className="btn-icon flex-shrink-0">
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
+          {/* Branding at bottom */}
+          <div className="pt-2 mt-1 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg, #2563eb, #06b6d4)' }}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {landingConfig.app.name}
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </aside>
     </>

@@ -39,14 +39,15 @@ export async function GET(request) {
       query.tags = tag;
     }
 
-    if (search) {
+    if (search && search.trim()) {
+      const sanitized = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$and = [
         { user: authUser.userId },
         {
           $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { tags: { $regex: search, $options: 'i' } },
+            { title: { $regex: sanitized, $options: 'i' } },
+            { description: { $regex: sanitized, $options: 'i' } },
+            { tags: { $regex: sanitized, $options: 'i' } },
           ],
         },
       ];
@@ -94,6 +95,16 @@ export async function POST(request) {
       dueDate: body.dueDate ? new Date(body.dueDate) : null,
       tags: Array.isArray(body.tags) ? body.tags : [],
       subtasks: Array.isArray(body.subtasks) ? body.subtasks : [],
+      comments: [],
+      links: Array.isArray(body.links) ? body.links : [],
+      activityLog: [
+        {
+          userName: authUser.name || 'You',
+          action: 'created task',
+          details: `Initial status: ${(body.status || 'todo').replace('-', ' ')}`,
+          createdAt: new Date(),
+        },
+      ],
     });
 
     return NextResponse.json({ success: true, data: task }, { status: 201 });

@@ -2,12 +2,26 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import { sendVerificationEmail } from '@/lib/email';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 // POST /api/auth/resend-code - Generate and resend fresh 6-digit OTP code
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    const rl = rateLimit(`resend:${ip}`, 3, 10 * 60 * 1000); // 3 resends per 10 min per IP
+
+    if (!rl.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many resend attempts. Please wait ${Math.ceil(rl.retryAfterSec / 60)} minutes.`,
+        },
+        { status: 429 }
+      );
+    }
+
     await dbConnect();
     const { email } = await request.json();
 

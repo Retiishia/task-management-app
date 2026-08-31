@@ -39,24 +39,61 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const body = await request.json();
 
+    const existingTask = await Task.findOne({ _id: id, user: authUser.userId });
+    if (!existingTask) {
+      return NextResponse.json({ success: false, error: 'Task not found or permission denied' }, { status: 404 });
+    }
+
     const updateData = {};
-    if (body.title !== undefined) updateData.title = body.title;
+    const newLogs = [];
+
+    if (body.title !== undefined && body.title !== existingTask.title) {
+      updateData.title = body.title;
+      newLogs.push({
+        userName: authUser.name || 'You',
+        action: 'renamed task',
+        details: `Title updated to "${body.title}"`,
+        createdAt: new Date(),
+      });
+    }
+
     if (body.description !== undefined) updateData.description = body.description;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.priority !== undefined) updateData.priority = body.priority;
+
+    if (body.status !== undefined && body.status !== existingTask.status) {
+      updateData.status = body.status;
+      newLogs.push({
+        userName: authUser.name || 'You',
+        action: 'changed status',
+        details: `Moved from "${existingTask.status.replace('-', ' ')}" to "${body.status.replace('-', ' ')}"`,
+        createdAt: new Date(),
+      });
+    }
+
+    if (body.priority !== undefined && body.priority !== existingTask.priority) {
+      updateData.priority = body.priority;
+      newLogs.push({
+        userName: authUser.name || 'You',
+        action: 'changed priority',
+        details: `Priority updated from "${existingTask.priority}" to "${body.priority}"`,
+        createdAt: new Date(),
+      });
+    }
+
     if (body.dueDate !== undefined) updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
     if (body.tags !== undefined) updateData.tags = body.tags;
     if (body.subtasks !== undefined) updateData.subtasks = body.subtasks;
+    if (body.links !== undefined) updateData.links = body.links;
+
+    const updateQuery = { $set: updateData };
+    if (newLogs.length > 0) {
+      updateQuery.$push = { activityLog: { $each: newLogs } };
+    }
 
     const updatedTask = await Task.findOneAndUpdate(
       { _id: id, user: authUser.userId },
-      { $set: updateData },
+      updateQuery,
       { new: true, runValidators: true }
     );
-
-    if (!updatedTask) {
-      return NextResponse.json({ success: false, error: 'Task not found or permission denied' }, { status: 404 });
-    }
 
     return NextResponse.json({ success: true, data: updatedTask });
   } catch (error) {

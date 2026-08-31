@@ -1,20 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DashboardView from '@/components/DashboardView';
 import TodoListView from '@/components/TodoListView';
-import MetricsOverview from '@/components/MetricsOverview';
 import KanbanBoard from '@/components/KanbanBoard';
+import CalendarView from '@/components/CalendarView';
 import TaskModal from '@/components/TaskModal';
 import AuthModal from '@/components/AuthModal';
 import VerificationModal from '@/components/VerificationModal';
 import { ToastProvider, useToast } from '@/components/Toast';
+import { exportTasksToCSV, exportTasksToJSON } from '@/lib/exportUtils';
 import navigationConfig from '@/data/navigation.json';
 import landingConfig from '@/data/landing.json';
 import {
   Search, Filter, LayoutGrid, List, RefreshCcw,
-  Layers, Edit3, Trash2, ShieldCheck, LogIn, Sparkles, Plus, Menu
+  Layers, Edit3, Trash2, ShieldCheck, LogIn, Sparkles, Plus, Menu,
+  Sun, Moon, Calendar as CalendarIcon, Download, FileSpreadsheet, FileCode,
+  X as CloseIcon, SlidersHorizontal
 } from 'lucide-react';
 
 const LANDING_ICON_MAP = {
@@ -36,11 +39,14 @@ function TaskManagementApp() {
   const [stats, setStats] = useState(null);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
-  const [viewMode, setViewMode] = useState('kanban');
+  const [viewMode, setViewMode] = useState('kanban'); // 'kanban' | 'list' | 'calendar'
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const exportRef = useRef(null);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -63,6 +69,47 @@ function TaskManagementApp() {
     document.documentElement.className = next;
     toast.info(`Switched to ${next} mode`);
   };
+
+  // Close export dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setIsExportOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard Shortcuts: 'N' -> New Task, '/' -> Search, 'Esc' -> Close modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+      if (e.key === 'Escape') {
+        setIsTaskModalOpen(false);
+        setIsAuthModalOpen(false);
+        setIsVerificationModalOpen(false);
+        setIsExportOpen(false);
+        setShowMobileSearch(false);
+        return;
+      }
+      if (isInput) return;
+
+      if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        handleOpenCreateModal('todo');
+      } else if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShowMobileSearch(true);
+        setTimeout(() => {
+          const searchEl = document.querySelector('.search-input');
+          searchEl?.focus();
+        }, 50);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Auth
   const checkAuthUser = useCallback(async () => {
@@ -182,7 +229,6 @@ function TaskManagementApp() {
 
   // Optimistic status update for drag-and-drop & arrows
   const handleStatusChange = async (id, newStatus) => {
-    // 1. Optimistically update local UI immediately
     setTasks((prev) =>
       prev.map((t) => (t._id === id ? { ...t, status: newStatus } : t))
     );
@@ -208,6 +254,19 @@ function TaskManagementApp() {
     }
   };
 
+  // ─── Export handlers ──────────────────────────────────────
+  const handleExportCSV = () => {
+    exportTasksToCSV(tasks);
+    setIsExportOpen(false);
+    toast.success('Tasks exported as CSV file');
+  };
+
+  const handleExportJSON = () => {
+    exportTasksToJSON(tasks);
+    setIsExportOpen(false);
+    toast.success('Tasks exported as JSON file');
+  };
+
   // ─── Page Title by View ───────────────────────────────────
   const PAGE_TITLE = navigationConfig.pageTitles;
 
@@ -217,8 +276,6 @@ function TaskManagementApp() {
       {user && (
         <Sidebar
           user={user}
-          theme={theme}
-          onToggleTheme={handleToggleTheme}
           onLogout={handleLogout}
           onOpenNewTaskModal={handleOpenCreateModal}
           onSeedData={handleSeedData}
@@ -234,90 +291,217 @@ function TaskManagementApp() {
       <div className={user ? 'main-content' : 'flex-1'}>
         {/* Top Bar */}
         {user && (
-          <div className="top-bar">
-            {/* Mobile Hamburger Menu Toggle */}
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="btn-icon lg:hidden mr-1"
-              title="Open Navigation"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-
-            <div className="flex-1">
-              <h1 className="text-sm sm:text-base font-bold" style={{ color: 'var(--text-primary)' }}>
-                {PAGE_TITLE[activeView] || 'Dashboard'}
-              </h1>
-            </div>
-
-            {/* Search */}
-            <div className="relative hidden sm:block">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ color: 'var(--text-muted)' }} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search tasks..."
-                className="search-input"
-                style={{ width: '200px' }}
-              />
-            </div>
-
-            {/* Filters */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="select-field hidden md:block"
-            >
-              <option value="all">All Statuses</option>
-              <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="review">Under Review</option>
-              <option value="completed">Completed</option>
-            </select>
-
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="select-field hidden md:block"
-            >
-              <option value="all">All Priorities</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-
-            {/* View Switcher (for My Tasks view) */}
-            {activeView === 'kanban' && (
-              <div className="view-toggle">
+          <>
+            <div className="top-bar flex items-center justify-between gap-1.5 sm:gap-3">
+              {/* Left: Mobile Hamburger & Page Title */}
+              <div className="flex items-center gap-1.5 min-w-0">
                 <button
-                  onClick={() => setViewMode('kanban')}
-                  className={`view-toggle-btn ${viewMode === 'kanban' ? 'active' : ''}`}
+                  onClick={() => setMobileOpen(true)}
+                  className="btn-icon lg:hidden flex-shrink-0"
+                  title="Open Navigation Drawer"
                 >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Board</span>
+                  <Menu className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                <h1 className="text-sm sm:text-base font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                  {PAGE_TITLE[activeView] || 'Dashboard'}
+                </h1>
+              </div>
+
+              {/* Center: Desktop Search & Filters */}
+              <div className="hidden lg:flex items-center gap-2">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search tasks... (/)"
+                    className="search-input"
+                    style={{ width: '180px' }}
+                  />
+                </div>
+
+                {/* Filters */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="select-field"
                 >
-                  <List className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">List</span>
+                  <option value="all">All Statuses</option>
+                  <option value="planning">Planning</option>
+                  <option value="todo">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="review">Under Review</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="select-field"
+                >
+                  <option value="all">All Priorities</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              {/* Right Action Icons & View Switcher */}
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                {/* Mobile Search Toggle Button */}
+                {activeView === 'kanban' && (
+                  <button
+                    onClick={() => setShowMobileSearch(!showMobileSearch)}
+                    className={`btn-icon lg:hidden ${showMobileSearch ? 'bg-[var(--bg-hover)] text-blue-400' : ''}`}
+                    title="Search & Filters"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* View Switcher (for My Tasks view) */}
+                {activeView === 'kanban' && (
+                  <div className="view-toggle">
+                    <button
+                      onClick={() => setViewMode('kanban')}
+                      className={`view-toggle-btn px-2 py-1 sm:px-2.5 sm:py-1 ${viewMode === 'kanban' ? 'active' : ''}`}
+                      title="Kanban Board"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      <span className="hidden xl:inline">Board</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`view-toggle-btn px-2 py-1 sm:px-2.5 sm:py-1 ${viewMode === 'list' ? 'active' : ''}`}
+                      title="List View"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      <span className="hidden xl:inline">List</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('calendar')}
+                      className={`view-toggle-btn px-2 py-1 sm:px-2.5 sm:py-1 ${viewMode === 'calendar' ? 'active' : ''}`}
+                      title="Calendar View"
+                    >
+                      <CalendarIcon className="w-3.5 h-3.5" />
+                      <span className="hidden xl:inline">Calendar</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Export Dropdown */}
+                <div className="relative" ref={exportRef}>
+                  <button
+                    onClick={() => setIsExportOpen(!isExportOpen)}
+                    title="Export Tasks"
+                    className="btn-icon"
+                  >
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </button>
+                  {isExportOpen && (
+                    <div
+                      className="absolute right-0 mt-2 w-44 rounded-lg shadow-xl py-1 z-50 border"
+                      style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+                    >
+                      <button
+                        onClick={handleExportCSV}
+                        className="w-full px-3 py-2 text-xs flex items-center gap-2 hover:bg-[var(--bg-hover)] text-left"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Export as CSV</span>
+                      </button>
+                      <button
+                        onClick={handleExportJSON}
+                        className="w-full px-3 py-2 text-xs flex items-center gap-2 hover:bg-[var(--bg-hover)] text-left"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        <FileCode className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Export as JSON</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={handleToggleTheme}
+                  title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+                  className="btn-icon"
+                >
+                  {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                </button>
+
+                {/* New Task Button */}
+                <button
+                  onClick={() => handleOpenCreateModal('todo')}
+                  className="btn-primary py-1.5 px-2.5 sm:py-2 sm:px-3 text-xs"
+                  title="Create New Task (Press N)"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">New Task</span>
                 </button>
               </div>
-            )}
+            </div>
 
-            {/* New Task Button */}
-            <button
-              onClick={() => handleOpenCreateModal('todo')}
-              className="btn-primary"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">New Task</span>
-            </button>
-          </div>
+            {/* Mobile / Tablet Collapsible Search & Filter Row */}
+            {(showMobileSearch || searchQuery || statusFilter !== 'all' || priorityFilter !== 'all') && activeView === 'kanban' && (
+              <div
+                className="lg:hidden px-3 py-2.5 border-b flex flex-wrap items-center gap-2"
+                style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+              >
+                <div className="relative flex-1 min-w-[140px]">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search tasks..."
+                    className="input-field text-xs py-1.5"
+                    style={{ paddingLeft: '2rem' }}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-white"
+                    >
+                      <CloseIcon className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="select-field text-xs py-1.5 flex-1 min-w-[100px]"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="planning">Planning</option>
+                  <option value="todo">To Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="review">Under Review</option>
+                  <option value="completed">Completed</option>
+                </select>
+
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="select-field text-xs py-1.5 flex-1 min-w-[100px]"
+                >
+                  <option value="all">All Priorities</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+            )}
+          </>
         )}
 
         {/* Page Body */}
@@ -331,30 +515,30 @@ function TaskManagementApp() {
 
           ) : !user ? (
             /* Landing / Auth Screen */
-            <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="min-h-screen flex items-center justify-center px-4 py-8">
               <div className="w-full max-w-sm text-center">
                 {/* Logo */}
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 sm:mb-6"
                   style={{ background: 'linear-gradient(135deg, #2563eb, #06b6d4)' }}>
-                  <Sparkles className="w-8 h-8 text-white" />
+                  <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                 </div>
 
-                <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
                   {landingConfig.app.name}
                 </h1>
-                <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                <p className="text-xs sm:text-sm mb-6 sm:mb-8" style={{ color: 'var(--text-secondary)' }}>
                   {landingConfig.app.tagline}
                 </p>
 
                 {/* Feature List */}
-                <div className="space-y-3 mb-8 text-left">
+                <div className="space-y-2.5 mb-6 sm:mb-8 text-left">
                   {landingConfig.features.map(({ icon: iconName, label, color }) => {
                     const Icon = LANDING_ICON_MAP[iconName] || ShieldCheck;
                     return (
-                      <div key={label} className="flex items-center gap-3 p-3 rounded-lg"
+                      <div key={label} className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-lg"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
                         <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
-                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                        <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                           {label}
                         </span>
                       </div>
@@ -364,14 +548,14 @@ function TaskManagementApp() {
 
                 <button
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="btn-primary w-full justify-center py-3"
+                  className="btn-primary w-full justify-center py-2.5 sm:py-3"
                 >
                   <LogIn className="w-4 h-4" />
                   Sign In / Create Account
                 </button>
 
                 {/* Theme toggle on landing */}
-                <button onClick={handleToggleTheme} className="btn-ghost mt-4 mx-auto">
+                <button onClick={handleToggleTheme} className="btn-ghost mt-4 mx-auto text-xs">
                   {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
                 </button>
               </div>
@@ -392,18 +576,8 @@ function TaskManagementApp() {
               ) : activeView === 'todolist' ? (
                 /* Dedicated Personal To-Do Checklist View */
                 <TodoListView />
-              ) : activeView === 'analytics' ? (
-                /* Analytics — shows metrics overview */
-                <>
-                  <MetricsOverview stats={stats} />
-                  <div className="card-flat rounded-lg p-8 text-center mt-4">
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      More detailed analytics coming soon! Check the Dashboard for real-time progress.
-                    </p>
-                  </div>
-                </>
               ) : (
-                /* My Tasks — Kanban / List View */
+                /* My Tasks — Kanban / List / Calendar View */
                 <>
                   {isLoadingTasks ? (
                     <div className="flex items-center justify-center py-20">
@@ -444,6 +618,12 @@ function TaskManagementApp() {
                       onStatusChange={handleStatusChange}
                       onOpenNewTaskModal={handleOpenCreateModal}
                     />
+                  ) : viewMode === 'calendar' ? (
+                    <CalendarView
+                      tasks={tasks}
+                      onEdit={handleOpenEditModal}
+                      onOpenNewTaskModal={handleOpenCreateModal}
+                    />
                   ) : (
                     /* List View */
                     <div className="card-flat overflow-hidden">
@@ -452,7 +632,7 @@ function TaskManagementApp() {
                           <thead style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border)' }}>
                             <tr>
                               {['Title', 'Status', 'Priority', 'Due Date', 'Tags', ''].map((h) => (
-                                <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider"
+                                <th key={h} className="px-3 sm:px-4 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
                                   style={{ color: 'var(--text-muted)' }}>
                                   {h}
                                 </th>
@@ -463,28 +643,28 @@ function TaskManagementApp() {
                             {tasks.map((task) => (
                               <tr
                                 key={task._id}
-                                className="border-t cursor-pointer"
+                                className="border-t cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
                                 style={{ borderColor: 'var(--border-subtle)' }}
                                 onClick={() => handleOpenEditModal(task)}
                               >
-                                <td className="px-4 py-3 font-medium max-w-xs truncate"
+                                <td className="px-3 sm:px-4 py-3 font-medium max-w-xs truncate"
                                   style={{ color: 'var(--text-primary)' }}>
                                   {task.title}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
                                   <span className={`status-badge status-${task.status}`}>
                                     {task.status.replace('-', ' ')}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
                                   <span className={`badge badge-${task.priority}`}>
                                     {task.priority}
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                <td className="px-3 sm:px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
                                   {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-3 sm:px-4 py-3">
                                   <div className="flex flex-wrap gap-1">
                                     {task.tags?.map((t, i) => (
                                       <span key={i} className="text-[10px] px-1.5 py-0.5 rounded font-mono"
@@ -497,7 +677,7 @@ function TaskManagementApp() {
                                     ))}
                                   </div>
                                 </td>
-                                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                                <td className="px-3 sm:px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                   <div className="flex items-center justify-end gap-1">
                                     <button onClick={() => handleOpenEditModal(task)} className="btn-icon">
                                       <Edit3 className="w-3.5 h-3.5" />
