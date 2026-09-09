@@ -1,5 +1,46 @@
 [
   {
+    "title": "🧠 Architecture & API Schema Design",
+    "description": "Plan the REST endpoints, caching layer, and data validation rules for the multi-workspace task manager.",
+    "status": "planning",
+    "priority": "high",
+    "dueDaysOffset": 5,
+    "tags": ["Architecture", "Planning", "SystemDesign"],
+    "subtasks": [
+      { "title": "Draft ERD diagram for workspace members", "completed": false },
+      { "title": "Define OpenAPI / Swagger endpoint spec", "completed": false },
+      { "title": "Estimate database index requirements", "completed": false }
+    ],
+    "links": [
+      { "title": "Figma Design System", "url": "https://figma.com" },
+      { "title": "API Specification Docs", "url": "https://swagger.io" }
+    ],
+    "comments": [
+      { "userName": "Retiishia", "text": "Drafted initial database index proposals. Need to review compound indexes for query isolation.", "hoursAgo": 3 }
+    ],
+    "activityLog": [
+      { "userName": "Retiishia", "action": "added resource link", "details": "Added Figma Design System link", "hoursAgo": 4 }
+    ]
+  },
+  {
+    "title": "📋 Set Up CI/CD & GitHub Actions Pipeline",
+    "description": "Configure automated Docker container builds, linting checks, and test runner on pull request merges.",
+    "status": "todo",
+    "priority": "medium",
+    "dueDaysOffset": 3,
+    "tags": ["DevOps", "CI/CD", "GitHub"],
+    "subtasks": [
+      { "title": "Create .github/workflows/deploy.yml", "completed": false },
+      { "title": "Configure Docker Hub secrets", "completed": false }
+    ],
+    "links": [
+      { "title": "GitHub Actions Documentation", "url": "https://docs.github.com/actions" }
+    ],
+    "comments": [
+      { "userName": "DevOps Bot", "text": "Remember to configure DOCKER_USERNAME and DOCKER_PASSWORD in GitHub Repository Secrets.", "hoursAgo": 6 }
+    ]
+  },
+  {
     "title": "🐳 Learn Docker Basics & Compose",
     "description": "Understand containerization, Dockerfile multi-stage builds, and running MongoDB + Mongo Express via Docker Compose.",
     "status": "in-progress",
@@ -10,6 +51,15 @@
       { "title": "Read DOCKER_LEARNING_GUIDE.md", "completed": true },
       { "title": "Run `docker compose up --build`", "completed": false },
       { "title": "Inspect running containers with `docker ps`", "completed": false }
+    ],
+    "links": [
+      { "title": "Docker Compose Reference", "url": "https://docs.docker.com/compose" }
+    ],
+    "comments": [
+      { "userName": "Retiishia", "text": "Mongo Express container is working cleanly on port 8081! Web app runs on port 3000.", "hoursAgo": 1 }
+    ],
+    "activityLog": [
+      { "userName": "Retiishia", "action": "completed subtask", "details": "Read DOCKER_LEARNING_GUIDE.md", "hoursAgo": 2 }
     ]
   },
   {
@@ -23,18 +73,9 @@
       { "title": "Review lib/dbConnect.js connection pooling", "completed": true },
       { "title": "Open MongoDB Compass to explore taskdb", "completed": false },
       { "title": "Test CRUD operations via the Next.js UI", "completed": false }
-    ]
-  },
-  {
-    "title": "⚡ Implement User Authentication & JWT",
-    "description": "Added User Registration, Login, bcrypt password hashing, and user-isolated database query filters.",
-    "status": "completed",
-    "priority": "urgent",
-    "dueDaysOffset": -1,
-    "tags": ["Auth", "JWT", "Security"],
-    "subtasks": [
-      { "title": "Create User schema and auth API endpoints", "completed": true },
-      { "title": "Enforce per-user MongoDB query isolation", "completed": true }
+    ],
+    "links": [
+      { "title": "MongoDB Manual", "url": "https://mongodb.com/docs" }
     ]
   },
   {
@@ -47,6 +88,27 @@
     "subtasks": [
       { "title": "Configure Light Mode HSL color variables", "completed": true },
       { "title": "Add Sun/Moon theme toggle icon to Navbar", "completed": true }
+    ],
+    "comments": [
+      { "userName": "UI Reviewer", "text": "Contrast looks great on both light and dark themes with the cyan accents.", "hoursAgo": 12 }
+    ]
+  },
+  {
+    "title": "⚡ Implement User Authentication & JWT",
+    "description": "Added User Registration, Login, bcrypt password hashing, and user-isolated database query filters.",
+    "status": "completed",
+    "priority": "urgent",
+    "dueDaysOffset": -1,
+    "tags": ["Auth", "JWT", "Security"],
+    "subtasks": [
+      { "title": "Create User schema and auth API endpoints", "completed": true },
+      { "title": "Enforce per-user MongoDB query isolation", "completed": true }
+    ],
+    "comments": [
+      { "userName": "Retiishia", "text": "Email verification and password reset workflows implemented and tested.", "hoursAgo": 24 }
+    ],
+    "activityLog": [
+      { "userName": "Retiishia", "action": "changed status", "details": "Moved from review to completed", "hoursAgo": 24 }
     ]
   }
 ]

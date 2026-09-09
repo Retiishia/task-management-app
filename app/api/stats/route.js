@@ -23,6 +23,7 @@ export async function GET(request) {
     const completed = await Task.countDocuments({ user: userId, status: 'completed' });
     const inProgress = await Task.countDocuments({ user: userId, status: 'in-progress' });
     const todo = await Task.countDocuments({ user: userId, status: 'todo' });
+    const planning = await Task.countDocuments({ user: userId, status: 'planning' });
     const review = await Task.countDocuments({ user: userId, status: 'review' });
     const urgent = await Task.countDocuments({ user: userId, priority: 'urgent' });
 
@@ -42,6 +43,7 @@ export async function GET(request) {
         completed,
         inProgress,
         todo,
+        planning,
         review,
         urgent,
         overdue,

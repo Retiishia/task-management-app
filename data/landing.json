@@ -1,8 +1,7 @@
 {
   "app": {
-    "name": "TaskFlow Pro",
-    "tagline": "Organize your work. Ship faster.",
-    "version": "1.0.0"
+    "name": "Retiishia Tasks Project",
+    "tagline": "Organize your work. Ship faster."
   },
   "features": [
     {

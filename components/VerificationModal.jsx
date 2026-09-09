@@ -10,6 +10,7 @@ export default function VerificationModal({ isOpen, email, onClose, onVerificati
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
+  const hasVerifiedRef = useRef(false);
 
   // Reset on open
   useEffect(() => {
@@ -17,11 +18,14 @@ export default function VerificationModal({ isOpen, email, onClose, onVerificati
       setDigits(['', '', '', '', '', '']);
       setError('');
       setMessage('');
+      hasVerifiedRef.current = false;
       setTimeout(() => inputRefs.current[0]?.focus(), 80);
     }
   }, [isOpen, email]);
 
   const verify = useCallback(async (code) => {
+    // Guard against duplicate submissions
+    if (hasVerifiedRef.current) return;
     setError('');
     setMessage('');
     setIsSubmitting(true);
@@ -33,7 +37,11 @@ export default function VerificationModal({ isOpen, email, onClose, onVerificati
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Verification failed');
-      onVerificationSuccess(data.user);
+      hasVerifiedRef.current = true;
+      // Only call success if we got a user object back (fresh verification with auto-login)
+      if (data.user) {
+        onVerificationSuccess(data.user);
+      }
       onClose();
     } catch (err) {
       setError(err.message);
@@ -48,7 +56,7 @@ export default function VerificationModal({ isOpen, email, onClose, onVerificati
   // Auto-submit when all 6 digits filled
   useEffect(() => {
     const code = digits.join('');
-    if (code.length === 6 && !isSubmitting) {
+    if (code.length === 6 && !isSubmitting && !hasVerifiedRef.current) {
       verify(code);
     }
   }, [digits, isSubmitting, verify]);

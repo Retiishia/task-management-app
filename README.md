@@ -71,28 +71,42 @@ You can run this application in **two ways**: via **Docker Compose** (Recommende
 task-management-app/
 ├── app/
 │   ├── api/
-│   │   ├── seed/route.js        # Sample task seeder endpoint
-│   │   ├── stats/route.js       # Task metrics aggregator
-│   │   ├── tasks/
-│   │   │   ├── route.js         # GET / POST tasks
-│   │   │   └── [id]/route.js    # GET / PUT / DELETE task by ID
-│   ├── globals.css              # Custom styling & glassmorphism
-│   ├── layout.js                # Root layout
-│   └── page.js                  # Main dashboard page
+│   │   ├── auth/          # login, logout, me, register, resend-code, verify
+│   │   ├── seed/route.js  # Sample data seeder
+│   │   ├── stats/route.js # Task metrics aggregation
+│   │   ├── tasks/         # CRUD (route.js + [id]/route.js)
+│   │   └── todos/         # CRUD (route.js + [id]/route.js)
+│   ├── globals.css        # 14KB — styling + glassmorphism
+│   ├── layout.jsx         # Root layout
+│   └── page.jsx           # 23KB — Main dashboard page
 ├── components/
-│   ├── KanbanBoard.js           # 4-Column status grid
-│   ├── MetricsOverview.js       # Analytics summary cards
-│   ├── Navbar.js                # Header & quick actions
-│   ├── TaskCard.js              # Individual task card component
-│   └── TaskModal.js             # Create & Edit task dialog
+│   ├── AuthModal.jsx       # Login/Register modal
+│   ├── DashboardView.jsx   # Dashboard analytics view
+│   ├── KanbanBoard.jsx     # 4-column Kanban board
+│   ├── MetricsOverview.jsx # Analytics summary cards
+│   ├── Navbar.jsx          # Header + quick actions
+│   ├── Sidebar.jsx         # Sidebar navigation
+│   ├── TaskCard.jsx        # Individual task card
+│   ├── TaskModal.jsx       # Create/Edit task dialog
+│   ├── Toast.jsx           # Toast notifications
+│   ├── TodoListView.jsx    # Todo list view
+│   └── VerificationModal.jsx # Email verification modal
+├── data/
+│   ├── appConfig.json     # App configuration
+│   ├── landing.json       # Landing page data
+│   ├── navigation.json    # Navigation structure
+│   └── sampleTasks.json   # Seed data
 ├── lib/
-│   └── dbConnect.js             # Mongoose connection manager with caching
+│   ├── auth.js            # JWT auth utilities
+│   ├── dbConnect.js       # Mongoose connection manager
+│   └── email.js           # Nodemailer email service
 ├── models/
-│   └── Task.js                  # Mongoose Task Schema & indexes
-├── Dockerfile                   # Multi-stage production build definition
-├── docker-compose.yml           # Container orchestrator (Web, MongoDB, Mongo-Express)
-├── DOCKER_LEARNING_GUIDE.md     # Docker educational guide
-├── MONGODB_LEARNING_GUIDE.md    # MongoDB educational guide
-├── package.json
-└── README.md
+│   ├── Task.js            # Task schema
+│   ├── Todo.js            # Todo schema
+│   └── User.js            # User schema
+├── Dockerfile             # Multi-stage production build
+├── docker-compose.yml     # Web + MongoDB + Mongo Express
+└── *.md                   # Learning guides (Docker, MongoDB)
 ```
+
+

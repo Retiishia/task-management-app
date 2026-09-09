@@ -2,8 +2,7 @@
   "pageTitles": {
     "dashboard": "Dashboard",
     "todolist": "Personal To-Do List",
-    "kanban": "My Tasks",
-    "analytics": "Analytics"
+    "kanban": "My Tasks"
   },
   "navItems": [
     {
@@ -13,18 +12,13 @@
     },
     {
       "id": "todolist",
-      "label": "Personal To-Do",
+      "label": "Personal To-Do List",
       "icon": "CheckSquare"
     },
     {
       "id": "kanban",
       "label": "My Tasks",
       "icon": "ListTodo"
-    },
-    {
-      "id": "analytics",
-      "label": "Analytics",
-      "icon": "BarChart2"
     }
   ]
 }
